@@ -1,0 +1,34 @@
+{
+  "name": "arkansas-rmt",
+  "author": {
+    "name": "Markus Ast",
+    "email": "npm.m@rkusa.st"
+  },
+  "contributors": [
+    {
+      "name": "Morris Jobke",
+      "email": "morris.jobke@gmail.com"
+    }
+  ],
+  "version": "0.1.0",
+  "main": "lib/",
+  "homepage": "https://github.com/kabum/arkansas-rmt",
+  "scripts": {
+    "test": "mocha"
+  },
+  "dependencies": {
+    "pg": "0.11.x",
+    "async": "0.1.x",
+    "node-uuid": "1.4.x"
+  },
+  "devDependencies": {
+    "mocha": "1.5.x",
+    "should": "1.2.x",
+    "arkansas": "git+ssh://git@github.com:rkusa/arkansas.git"
+  },
+  "bugs": "https://github.com/kabum/arkansas-rmt/issues",
+  "repository" : {
+    "type": "git",
+    "url": "git://github.com/kabum/arkansas-rmt.git"
+  }
+}
