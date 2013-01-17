@@ -32,13 +32,13 @@ describe('Arkansas PostgreSql RM/T Adapter', function() {
         function(done) {
           Rad = Arkansas.Model.define('Rad', function() {
             this.use(require('../'), { db: 'postgre' })
-            this.property('Umfang')
+            this.property('umfang')
           }, done)
         },
         function(done) {
           Motor = Arkansas.Model.define('Motor', function() {
             this.use(require('../'), { db: 'postgre' })
-            this.property('Leistung')
+            this.property('leistung')
           }, done)
         },
         function(done) {
@@ -46,7 +46,7 @@ describe('Arkansas PostgreSql RM/T Adapter', function() {
             this.use(require('../'), { db: 'postgre' }, function() {
               this.composes(Rad, Motor)
             })
-            this.property('Hersteller')
+            this.property('hersteller')
           }, done)
         },
         function(done) {
@@ -54,42 +54,93 @@ describe('Arkansas PostgreSql RM/T Adapter', function() {
             this.use(require('../'), { db: 'postgre' }, function() {
               this.extends('is-a', Fahrzeug)
             })
-            this.property('Farbe')
+            this.property('farbe')
           }, done)
         }
       ], done)
     })
-    it.skip('should create a P-Relation if not exists', function(done){
+    it('should initialize global tables (AG, PG, UGI)', function(done) {
       client.query(
-        'SELECT COUNT(*) FROM information_schema.tables WHERE table_name = \'p_user\' OR table_name = \'p_user_stammdaten\';',
+        'SELECT DISTINCT COUNT(table_name) FROM information_schema.tables WHERE table_name LIKE \'rmt\\_%\';',
         function(err, result) {
           if(err) throw err
-          result.rows[0].count.should.equal(2) // tables exists
-          client.query(
-            'SELECT COUNT(*) FROM ' +
-              'information_schema.columns ' +
-            'WHERE table_name = \'p_user\' AND (' +
-              'column_name = \'ai\' AND  data_type = \'integer\' OR ' +
-              'column_name = \'af\' AND  data_type = \'real\' OR ' +
-              'column_name = \'ad\' AND  data_type = \'real\' OR ' +
-              'column_name = \'ab\' AND  data_type = \'boolean\' OR ' +
-              'column_name = \'ac\' AND  data_type = \'character varying\'' +
-            ');',
-            function(err, result) {
-              if(err) throw err
-              result.rows[0].count.should.equal(5)
-              client.query(
-                'SELECT COUNT(*) FROM ' +
-                  'information_schema.columns ' +
-                'WHERE table_name = \'p_user\';',
-                function(err, result) {
-                  if(err) throw err
-                  result.rows[0].count.should.equal(5 + 2) // + 2 == surrogate + id
-                  done()
-                }
-              )
-            }
-          )
+          result.rows[0].count.should.equal(3)
+          done()
+        }
+      )
+    })
+    it('should create a P-Relation and a E-Relation if not exists', function(done) {
+      client.query(
+        'SELECT DISTINCT table_name FROM information_schema.tables ' +
+        'WHERE table_name SIMILAR TO \'(p|e)\\_%\';',
+        function(err, result) {
+          if(err) throw err
+          var tables = result.rows.map(function(a){return a.table_name})
+          tables.length.should.equal(8)
+          for(var i in tables)
+            tables[i].should.match(/^(p|e)_(auto|motor|rad|fahrzeug)$/)
+          done()
+        }
+      )
+    })
+    it('should create all specified columns', function(done) {
+      client.query(
+        'SELECT DISTINCT table_name, column_name FROM information_schema.columns ' +
+        'WHERE table_name SIMILAR TO \'(p|e)\\_%\';',
+        function(err, result) {
+          if(err) throw err
+          var columns = result.rows
+          columns.length.should.equal(16)
+          for(var i in columns) {
+            var table = columns[i]
+            if(table.table_name.match(/^e_.*/))
+              table.column_name.should.equal('id')
+            else
+              table.column_name.should.match(/^(id|surrogat|leistung|umfang|hersteller|farbe)$/)
+          }
+          done()
+        }
+      )
+    })
+    it('should create AG entries', function(done) {
+      client.query(
+        'SELECT * FROM rmt_ag;',
+        function(err, result) {
+          if(err) throw err
+          result.rows.length.should.equal(2)
+          for(var i in result.rows) {
+            var e = result.rows[i]
+            e.sup.should.equal('Fahrzeug')
+            e.sub.should.match(/^(Rad|Motor)$/)
+          }
+          done()
+        }
+      )
+    })
+    it.skip('should create PG entries', function(done) {
+      client.query(
+        'SELECT * FROM rmt_pg;',
+        function(err, result) {
+          if(err) throw err
+          var pgs = result.rows
+          pgs.length.should.equal(4)
+          for(var i in pgs)
+            pgs[i].sub.should.equal('p_' + pgs[i].sup.toLowerCase())
+          done()
+        }
+      )
+    })
+    it('should create UGI entries', function(done) {
+      client.query(
+        'SELECT * FROM rmt_ugi;',
+        function(err, result) {
+          if(err) throw err
+          result.rows.length.should.equal(1)
+          var e = result.rows[0]
+          e.sup.should.equal('Fahrzeug')
+          e.label.should.equal('is-a')
+          e.sub.should.equal('Auto')
+          done()
         }
       )
     })
