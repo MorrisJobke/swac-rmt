@@ -90,13 +90,13 @@ describe('Arkansas PostgreSql RM/T Adapter', function() {
         function(err, result) {
           if(err) throw err
           var columns = result.rows
-          columns.length.should.equal(16)
+          columns.length.should.equal(18)
           for(var i in columns) {
             var table = columns[i]
             if(table.table_name.match(/^e_.*/))
               table.column_name.should.equal('id')
             else
-              table.column_name.should.match(/^(id|surrogat|leistung|umfang|hersteller|farbe)$/)
+              table.column_name.should.match(/^(id|surrogat|leistung|umfang|hersteller|farbe|rad|motor)$/)
           }
           done()
         }
@@ -145,21 +145,34 @@ describe('Arkansas PostgreSql RM/T Adapter', function() {
       )
     })
   })
-  describe.skip('CRUD', function() {
-    var cur
+  describe('CRUD', function() {
     it('POST should work', domainify(function(done) {
-      model.post({ key: '1', type: 'a' }, function(err, row) {
+      Auto.post({ farbe: 'schwarz', rad: new Rad({umfang: '13 cm'}), motor: new Motor({leistung: '130 PS'}), hersteller: 'MM' }, function(err, auto) {
         should.not.exist(err)
-        cur = row
-        db.get(row.id, function(err, body) {
-          if (err) throw err
-          body.key.should.equal(row.key)
-          body.type.should.equal(row.type)
-          done()
+        client.query(
+          'SELECT p_auto.farbe, p_rad.umfang, p_motor.leistung, p_fahrzeug.hersteller ' +
+          'FROM p_auto JOIN p_fahrzeug ON p_auto.surrogat = p_fahrzeug.surrogat ' +
+          'JOIN p_rad ON p_rad.surrogat = p_fahrzeug.rad ' +
+          'JOIN p_motor ON p_motor.surrogat = p_fahrzeug.motor ' +
+          'WHERE p_auto.id = $1;',
+          [auto.id] ,
+          function(err, result) {
+            if (err) throw err
+            result.rows.length.should.equal(1)
+            var a = result.rows[0]
+            auto.should.have.property('farbe', 'schwarz')
+            auto.should.have.property('hersteller', 'MM')
+            auto.motor.should.have.property('leistung', '130 PS')
+            auto.rad.should.have.property('umfang', '13 cm')
+            a.should.have.property('farbe', 'schwarz')
+            a.should.have.property('hersteller', 'MM')
+            a.should.have.property('leistung', '130 PS')
+            a.should.have.property('umfang', '13 cm')
+            done()
         })
       })
     }))
-    it('PUT should work', domainify(function(done) {
+    it.skip('PUT should work', domainify(function(done) {
       cur.key = 2
       cur.type = 'b'
       model.put(cur.id, cur, function(err, row) {
@@ -172,7 +185,7 @@ describe('Arkansas PostgreSql RM/T Adapter', function() {
         })
       })
     }))
-    it('GET should work', domainify(function(done) {
+    it.skip('GET should work', domainify(function(done) {
       model.get(cur.id, function(err, body) {
         should.not.exist(err)
         body.id.should.equal(cur.id)
@@ -181,7 +194,7 @@ describe('Arkansas PostgreSql RM/T Adapter', function() {
         done()
       })
     }))
-    it('LIST should work', domainify(function(done) {
+    it.skip('LIST should work', domainify(function(done) {
       model.post({ key: '1', type: 'a' }, function(err, row) {
         should.not.exist(err)
         model.list(function(err, items) {
@@ -189,31 +202,6 @@ describe('Arkansas PostgreSql RM/T Adapter', function() {
           items.should.have.lengthOf(2)
           done()
         })
-      })
-    }))
-  })
-  describe.skip('Views', function() {
-    it('should be created', function(done) {
-      db.get('_design/TestModel', function(err, body) {
-        should.not.exist(err)
-        body.views.should.have.property('by-key')
-        body.views['by-key'].map.should.equal(view.toString())
-        done()
-      })
-    })
-    it('should work', domainify(function(done) {
-      model.list('by-key', 2, function(err, items) {
-        should.not.exist(err)
-        items.should.have.lengthOf(1)
-        done()
-      })
-    }))
-    it('should work with function type views', domainify(function(done) {
-      model.list('by-fn', 42, function(err, res) {
-        res.should.have.lengthOf(2)
-        res[0].should.eql(42)
-        res[1].should.eql(d.req)
-        done()
       })
     }))
   })
