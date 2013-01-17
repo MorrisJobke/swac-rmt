@@ -1,7 +1,8 @@
 var Arkansas = require('arkansas')
   , should   = require('should')
   , pg       = require('pg')
-  , client, model
+  , async    = require('async')
+  , client
 
 var domain = require('domain')
   , d = domain.create()
@@ -24,13 +25,39 @@ describe('Arkansas PostgreSql RM/T Adapter', function() {
   // after(function(done) {
   //   nano.db.destroy('arkansas-couchdb-test', done)
   // })
+  var Fahrzeug, Auto, Rad, Motor
   describe('Model Definition', function() {
     before(function(done) {
-      model = Arkansas.Model.define('Fahrzeug', function() {
-        this.use(require('../'), { db: 'postgre' })
-        this.property('ps')
-        this.property('color')
-      }, done)
+      async.series([
+        function(done) {
+          Rad = Arkansas.Model.define('Rad', function() {
+            this.use(require('../'), { db: 'postgre' })
+            this.property('Umfang')
+          }, done)
+        },
+        function(done) {
+          Motor = Arkansas.Model.define('Motor', function() {
+            this.use(require('../'), { db: 'postgre' })
+            this.property('Leistung')
+          }, done)
+        },
+        function(done) {
+          Fahrzeug = Arkansas.Model.define('Fahrzeug', function() {
+            this.use(require('../'), { db: 'postgre' }, function() {
+              this.composes(Rad, Motor)
+            })
+            this.property('Hersteller')
+          }, done)
+        },
+        function(done) {
+          Auto = Arkansas.Model.define('Auto', function() {
+            this.use(require('../'), { db: 'postgre' }, function() {
+              this.extends('is-a', Fahrzeug)
+            })
+            this.property('Farbe')
+          }, done)
+        }
+      ], done)
     })
     it.skip('should create a P-Relation if not exists', function(done){
       client.query(
