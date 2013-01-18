@@ -1,13 +1,13 @@
 {
   "name": "arkansas-rmt",
   "author": {
-    "name": "Markus Ast",
-    "email": "npm.m@rkusa.st"
+    "name": "Morris Jobke",
+    "email": "morris.jobke@gmail.com"
   },
   "contributors": [
     {
-      "name": "Morris Jobke",
-      "email": "morris.jobke@gmail.com"
+      "name": "Markus Ast",
+      "email": "npm.m@rkusa.st"
     }
   ],
   "version": "0.1.0",
