@@ -16,7 +16,7 @@ var domainify = function(fn) {
 
 describe('Arkansas PostgreSql RM/T Adapter', function() {
   before(function(done) {
-    pg.connect('tcp://markus@alice/postgres', function(err, c) {
+    pg.connect(process.env.POSTGRES  || 'tcp://postgres@127.0.0.1/postgres', function(err, c) {
       if (err) throw err
       client = c
       done()
