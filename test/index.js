@@ -190,7 +190,10 @@ describe('Arkansas PostgreSql RM/T Adapter', function() {
     it('GET should work', domainify(function(done) {
       Auto.get(cur.id, function(err, auto) {
         should.not.exist(err)
-        //console.log(auto)
+        auto.should.have.property('farbe', cur.farbe)
+        auto.should.have.property('hersteller', cur.hersteller)
+        auto.motor.should.have.property('leistung', cur.motor.leistung)
+        auto.rad.should.have.property('umfang', cur.rad.umfang)
         done()
       })
     }))
