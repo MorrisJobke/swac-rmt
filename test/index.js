@@ -146,8 +146,10 @@ describe('Arkansas PostgreSql RM/T Adapter', function() {
     })
   })
   describe('CRUD', function() {
+    var cur
     it('POST should work', domainify(function(done) {
       Auto.post({ farbe: 'schwarz', rad: new Rad({umfang: '13 cm'}), motor: new Motor({leistung: '130 PS'}), hersteller: 'MM' }, function(err, auto) {
+        cur = auto
         should.not.exist(err)
         client.query(
           'SELECT p_auto.farbe, p_rad.umfang, p_motor.leistung, p_fahrzeug.hersteller ' +
@@ -185,12 +187,10 @@ describe('Arkansas PostgreSql RM/T Adapter', function() {
         })
       })
     }))
-    it.skip('GET should work', domainify(function(done) {
-      model.get(cur.id, function(err, body) {
+    it('GET should work', domainify(function(done) {
+      Auto.get(cur.id, function(err, auto) {
         should.not.exist(err)
-        body.id.should.equal(cur.id)
-        body.key.should.equal(cur.key)
-        body.type.should.equal(cur.type)
+        //console.log(auto)
         done()
       })
     }))
