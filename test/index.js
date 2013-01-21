@@ -22,9 +22,15 @@ describe('Arkansas PostgreSql RM/T Adapter', function() {
       done()
     })
   })
-  // after(function(done) {
-  //   nano.db.destroy('arkansas-couchdb-test', done)
-  // })
+  after(function(done) {
+    async.parallel(
+      ['e_auto', 'e_fahrzeug', 'e_motor', 'e_rad', 'p_auto', 'p_fahrzeug', 'p_motor', 'p_rad',
+      'rmt_ag', 'rmt_pg', 'rmt_ugi'].map(function(table) {
+        return client.query.bind(client, 'DROP TABLE ' + table)
+      }),
+      done
+    )
+  })
   var Fahrzeug, Auto, Rad, Motor
   describe('Model Definition', function() {
     before(function(done) {
@@ -146,9 +152,9 @@ describe('Arkansas PostgreSql RM/T Adapter', function() {
     })
   })
   describe('CRUD', function() {
-    var cur
+    var cur, rad, motor
     it('POST should work', domainify(function(done) {
-      Auto.post({ farbe: 'schwarz', rad: new Rad({umfang: '13 cm'}), motor: new Motor({leistung: '130 PS'}), hersteller: 'MM' }, function(err, auto) {
+      Auto.post({ farbe: 'schwarz', rad: (rad = new Rad({umfang: '13 cm'})), motor: (motor = new Motor({leistung: '130 PS'})), hersteller: 'MM' }, function(err, auto) {
         cur = auto
         should.not.exist(err)
         client.query(
@@ -174,15 +180,14 @@ describe('Arkansas PostgreSql RM/T Adapter', function() {
         })
       })
     }))
-    it.skip('PUT should work', domainify(function(done) {
-      cur.key = 2
-      cur.type = 'b'
-      model.put(cur.id, cur, function(err, row) {
+    it('PUT should work', domainify(function(done) {
+      cur.farbe = 'blue'
+      Auto.put(cur.id, cur, function(err, row) {
         should.not.exist(err)
-        db.get(row.id, function(err, body) {
+        client.query('SELECT * FROM p_auto WHERE id = $1', [cur.id], function(err, result) {
           if (err) throw err
-          body.key.should.equal(cur.key)
-          body.type.should.equal(cur.type)
+          result.should.have.property('rowCount', 1)
+          result.rows[0].should.have.property('farbe', 'blue')
           done()
         })
       })
@@ -190,19 +195,23 @@ describe('Arkansas PostgreSql RM/T Adapter', function() {
     it('GET should work', domainify(function(done) {
       Auto.get(cur.id, function(err, auto) {
         should.not.exist(err)
+        auto.should.have.property('id', cur.id)
         auto.should.have.property('farbe', cur.farbe)
         auto.should.have.property('hersteller', cur.hersteller)
         auto.motor.should.have.property('leistung', cur.motor.leistung)
         auto.rad.should.have.property('umfang', cur.rad.umfang)
+        auto.should.have.property('_surrogat', cur._surrogat)
+        auto.rad.should.have.property('_surrogat', rad._surrogat)
+        auto.motor.should.have.property('_surrogat', motor._surrogat)
         done()
       })
     }))
-    it.skip('LIST should work', domainify(function(done) {
-      model.post({ key: '1', type: 'a' }, function(err, row) {
+    it('LIST should work', domainify(function(done) {
+      Auto.post({ farbe: 'rot' }, function(err, row) {
         should.not.exist(err)
-        model.list(function(err, items) {
-          if (err) throw err
-          items.should.have.lengthOf(2)
+        Auto.list(function(err, autos) {
+          should.not.exist(err)
+          autos.should.have.lengthOf(2)
           done()
         })
       })
