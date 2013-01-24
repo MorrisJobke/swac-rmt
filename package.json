@@ -17,7 +17,7 @@
     "test": "mocha"
   },
   "dependencies": {
-    "pg": "0.11.x",
+    "pg": "0.12.x",
     "async": "0.1.x",
     "node-uuid": "1.4.x"
   },
