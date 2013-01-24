@@ -1,4 +1,4 @@
-var Arkansas = require('arkansas')
+var swac = require('swac')
   , should   = require('should')
   , pg       = require('pg')
   , async    = require('async')
@@ -14,7 +14,7 @@ var domainify = function(fn) {
   }
 }
 
-describe('Arkansas PostgreSql RM/T Adapter', function() {
+describe('SWAC PostgreSql RM/T Adapter', function() {
   before(function(done) {
     pg.connect(process.env.POSTGRES  || 'tcp://postgres@127.0.0.1/postgres', function(err, c) {
       if (err) throw err
@@ -36,19 +36,19 @@ describe('Arkansas PostgreSql RM/T Adapter', function() {
     before(function(done) {
       async.series([
         function(done) {
-          Rad = Arkansas.Model.define('Rad', function() {
+          Rad = swac.Model.define('Rad', function() {
             this.use(require('../'), { db: 'postgre' })
             this.property('umfang')
           }, done)
         },
         function(done) {
-          Motor = Arkansas.Model.define('Motor', function() {
+          Motor = swac.Model.define('Motor', function() {
             this.use(require('../'), { db: 'postgre' })
             this.property('leistung')
           }, done)
         },
         function(done) {
-          Fahrzeug = Arkansas.Model.define('Fahrzeug', function() {
+          Fahrzeug = swac.Model.define('Fahrzeug', function() {
             this.use(require('../'), { db: 'postgre' }, function() {
               this.composes(Rad, Motor)
             })
@@ -56,7 +56,7 @@ describe('Arkansas PostgreSql RM/T Adapter', function() {
           }, done)
         },
         function(done) {
-          Auto = Arkansas.Model.define('Auto', function() {
+          Auto = swac.Model.define('Auto', function() {
             this.use(require('../'), { db: 'postgre' }, function() {
               this.extends('is-a', Fahrzeug)
             })

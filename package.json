@@ -1,5 +1,5 @@
 {
-  "name": "arkansas-rmt",
+  "name": "swac-rmt",
   "author": {
     "name": "Morris Jobke",
     "email": "morris.jobke@gmail.com"
@@ -12,7 +12,7 @@
   ],
   "version": "0.1.0",
   "main": "lib/",
-  "homepage": "https://github.com/kabum/arkansas-rmt",
+  "homepage": "https://github.com/kabum/swac-rmt",
   "scripts": {
     "test": "mocha"
   },
@@ -24,11 +24,11 @@
   "devDependencies": {
     "mocha": "1.5.x",
     "should": "1.2.x",
-    "arkansas": "git+ssh://git@github.com:rkusa/arkansas.git"
+    "swac": "git+ssh://git@github.com:rkusa/swac.git"
   },
-  "bugs": "https://github.com/kabum/arkansas-rmt/issues",
+  "bugs": "https://github.com/kabum/swac-rmt/issues",
   "repository" : {
     "type": "git",
-    "url": "git://github.com/kabum/arkansas-rmt.git"
+    "url": "git://github.com/kabum/swac-rmt.git"
   }
 }
