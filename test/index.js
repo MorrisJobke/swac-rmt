@@ -116,14 +116,14 @@ describe('SWAC PostgreSql RM/T Adapter', function() {
           result.rows.length.should.equal(2)
           for(var i in result.rows) {
             var e = result.rows[i]
-            e.sup.should.equal('Fahrzeug')
-            e.sub.should.match(/^(Rad|Motor)$/)
+            e.sup.should.equal('fahrzeug')
+            e.sub.should.match(/^(rad|motor)$/)
           }
           done()
         }
       )
     })
-    it.skip('should create PG entries', function(done) {
+    it('should create PG entries', function(done) {
       client.query(
         'SELECT * FROM rmt_pg;',
         function(err, result) {
@@ -143,9 +143,9 @@ describe('SWAC PostgreSql RM/T Adapter', function() {
           if(err) throw err
           result.rows.length.should.equal(1)
           var e = result.rows[0]
-          e.sup.should.equal('Fahrzeug')
+          e.sup.should.equal('fahrzeug')
           e.label.should.equal('is-a')
-          e.sub.should.equal('Auto')
+          e.sub.should.equal('auto')
           done()
         }
       )
@@ -180,7 +180,7 @@ describe('SWAC PostgreSql RM/T Adapter', function() {
         })
       })
     }))
-    it.skip('POST should create surrogates in e-relation', domainify(function(done) {
+    it('POST should create surrogates in e-relation', domainify(function(done) {
       client.query(
         'SELECT e_auto.id AS surrogat ' +
         'FROM e_auto JOIN p_auto ON e_auto.id = p_auto.surrogat ' +
@@ -189,7 +189,7 @@ describe('SWAC PostgreSql RM/T Adapter', function() {
         function(err, result) {
           should.not.exist(err)
           result.rows.length.should.equal(1)
-          result.rows[0].should.have.property('surrogat', 'abc')
+          result.rows[0].should.have.property('surrogat', cur._surrogat)
           done()
       })
     }))
