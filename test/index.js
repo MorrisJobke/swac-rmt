@@ -180,6 +180,19 @@ describe('SWAC PostgreSql RM/T Adapter', function() {
         })
       })
     }))
+    it.skip('POST should create surrogates in e-relation', domainify(function(done) {
+      client.query(
+        'SELECT e_auto.id AS surrogat ' +
+        'FROM e_auto JOIN p_auto ON e_auto.id = p_auto.surrogat ' +
+        'WHERE p_auto.id = $1;',
+        [cur.id] ,
+        function(err, result) {
+          should.not.exist(err)
+          result.rows.length.should.equal(1)
+          result.rows[0].should.have.property('surrogat', 'abc')
+          done()
+      })
+    }))
     it('PUT should work', domainify(function(done) {
       cur.farbe = 'blue'
       Auto.put(cur.id, cur, function(err, row) {
