@@ -1,4 +1,4 @@
-# [SWAC](https://github.com/rkusa/swac)'s ![](https://dl.dropbox.com/u/6699613/swac-logo.png) PostgreSQL RM/T Adapter (Prototype)
+# [SWAC](https://github.com/rkusa/swac)'s PostgreSQL RM/T Adapter (Prototype)
 
 ## Usage
 

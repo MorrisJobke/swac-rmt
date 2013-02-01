@@ -30,5 +30,8 @@
   "repository" : {
     "type": "git",
     "url": "git://github.com/kabum/swac-rmt.git"
+  },
+  "engines": {
+    "node": ">=0.8"
   }
 }
